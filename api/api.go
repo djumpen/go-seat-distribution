@@ -40,28 +40,23 @@ type GetNewSalonResp struct {
 func (api *API) GetNewSalon(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
 		return
 	}
 	var req GetNewSalonReq
 	err = json.Unmarshal(body, &req)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	s, err := api.SalonFactory.NewSalon(req.Rows, req.Blocks, req.SeatCountPerBlock)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	salonID := api.UUIDGenerator.GenerateUUID()
 	err = api.Storage.SaveSalon(salonID, *s)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	resp := GetNewSalonResp{
@@ -70,8 +65,7 @@ func (api *API) GetNewSalon(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := json.Marshal(resp)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -89,21 +83,18 @@ type GetSalonResp struct {
 func (api *API) GetSalon(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	var req GetSalonReq
 	err = json.Unmarshal(body, &req)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	s, err := api.Storage.GetSalon(req.SalonID)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	resp := GetSalonResp{
@@ -111,8 +102,7 @@ func (api *API) GetSalon(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := json.Marshal(resp)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -130,27 +120,23 @@ type AssignSeatResp struct {
 func (api *API) AssignSeat(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	var req AssignSeatReq
 	err = json.Unmarshal(body, &req)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	s, err := api.Storage.GetSalon(req.SalonID)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	assignedSeat, err := salon.DefaultSeatAssign(&s)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	resp := AssignSeatResp{
@@ -158,8 +144,7 @@ func (api *API) AssignSeat(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := json.Marshal(resp)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -178,27 +163,23 @@ type SeatInfoResp struct {
 func (api *API) SeatInfo(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	var req SeatInfoReq
 	err = json.Unmarshal(body, &req)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	s, err := api.Storage.GetSalon(req.SalonID)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	seatOnIndex, err := salon.GetSeatByIndex(&s, req.SeatNumber)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	resp := AssignSeatResp{
@@ -206,10 +187,14 @@ func (api *API) SeatInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	data, err := json.Marshal(resp)
 	if err != nil {
-		w.WriteHeader(400)
-		w.Write([]byte(err.Error()))
+		newAPIErr(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
+}
+
+func newAPIErr(w http.ResponseWriter, err error) {
+	w.WriteHeader(400)
+	w.Write([]byte(err.Error()))
 }
