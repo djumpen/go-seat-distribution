@@ -8,8 +8,6 @@ import (
 
 	"encoding/json"
 	"net/http"
-
-	"io/ioutil"
 )
 
 type API struct {
@@ -38,12 +36,9 @@ type GetNewSalonResp struct {
 }
 
 func (api *API) GetNewSalon(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return
-	}
+
 	var req GetNewSalonReq
-	err = json.Unmarshal(body, &req)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		newAPIErr(w, err)
 		return
@@ -63,13 +58,13 @@ func (api *API) GetNewSalon(w http.ResponseWriter, r *http.Request) {
 		SalonID: salonID,
 		Salon:   *s,
 	}
-	data, err := json.Marshal(resp)
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		newAPIErr(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
 }
 
 type GetSalonReq struct {
@@ -81,13 +76,8 @@ type GetSalonResp struct {
 }
 
 func (api *API) GetSalon(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		newAPIErr(w, err)
-		return
-	}
 	var req GetSalonReq
-	err = json.Unmarshal(body, &req)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		newAPIErr(w, err)
 		return
@@ -100,13 +90,13 @@ func (api *API) GetSalon(w http.ResponseWriter, r *http.Request) {
 	resp := GetSalonResp{
 		Salon: s,
 	}
-	data, err := json.Marshal(resp)
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		newAPIErr(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
 }
 
 type AssignSeatReq struct {
@@ -118,13 +108,8 @@ type AssignSeatResp struct {
 }
 
 func (api *API) AssignSeat(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		newAPIErr(w, err)
-		return
-	}
 	var req AssignSeatReq
-	err = json.Unmarshal(body, &req)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		newAPIErr(w, err)
 		return
@@ -142,13 +127,14 @@ func (api *API) AssignSeat(w http.ResponseWriter, r *http.Request) {
 	resp := AssignSeatResp{
 		AssignedSeat: assignedSeat,
 	}
-	data, err := json.Marshal(resp)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		newAPIErr(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
 }
 
 type SeatInfoReq struct {
@@ -161,13 +147,8 @@ type SeatInfoResp struct {
 }
 
 func (api *API) SeatInfo(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		newAPIErr(w, err)
-		return
-	}
 	var req SeatInfoReq
-	err = json.Unmarshal(body, &req)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		newAPIErr(w, err)
 		return
@@ -185,13 +166,14 @@ func (api *API) SeatInfo(w http.ResponseWriter, r *http.Request) {
 	resp := AssignSeatResp{
 		AssignedSeat: seatOnIndex,
 	}
-	data, err := json.Marshal(resp)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		newAPIErr(w, err)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(data)
 }
 
 func newAPIErr(w http.ResponseWriter, err error) {
